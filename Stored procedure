@@ -1,0 +1,77 @@
+CREATE DATABASE DepartmentStore3;
+GO
+USE DepartmentStore3;
+GO
+CREATE SCHEMA Inventory;
+GO
+CREATE TABLE Inventory.Categories
+(
+    CategoryID int identity(1, 1) primary key,
+    Category nvarchar(20) not null
+);
+GO
+INSERT INTO Inventory.Categories(Category)
+VALUES(N'Men'), (N'Women'), (N'Boys'), (N'Girls'),(N'Miscellaneous');
+GO
+SELECT * FROM Inventory.Categories;
+
+CREATE TABLE Inventory.StoreItems
+(
+    ItemNumber nvarchar(10) primary key,
+    CategoryID int foreign key
+        references Inventory.Categories(CategoryID),
+    ItemName nvarchar(60) not null,
+    Size nvarchar(20),
+    UnitPrice money
+);
+
+INSERT INTO Inventory.StoreItems
+VALUES(N'264850', 2, N'LJersey Dress', N'abx', 39.95),
+      (N'930405', 4, N'Solid Crewneck Tee', N'Medium', 12.95),
+      (N'293004', 1, N'Cotton Comfort Open Bottom Pant', N'XLarge', 17.85),
+      (N'924515', 1, N'Hooded Full-Zip Sweatshirt', N'S', 69.95),
+      (N'192004', 3, N'Sunglasses', NULL, 15.85);
+GO
+
+SELECT * FROM Inventory.StoreItems;
+
+
+CREATE PROCEDURE Inventory. CalculateNetPrice
+@discount Decimal
+AS
+    SET NOCOUNT ON
+    SELECT ItemName, UnitPrice - (UnitPrice * @discount / 100)
+    FROM StoreItems;
+GO
+EXEC Inventory. CalculateNetPrice 20;
+GO
+
+CREATE PROCEDURE Inventory.CalculateDiscountedPrice
+@discount decimal = 10.00
+AS
+    SET NOCOUNT ON
+    SELECT ItemName, UnitPrice - (UnitPrice * @discount / 100)
+    FROM StoreItems;
+GO
+
+EXEC Inventory.CalculateDiscountedPrice;
+GO
+
+
+CREATE PROCEDURE Inventory.CalculateSalePrice
+@Discount decimal = 20.00,
+@TaxRate  decimal = 7.75
+AS
+    SET NOCOUNT ON
+    SELECT ItemName As [Item Description],
+           UnitPrice As [Marked Price],
+           UnitPrice * @Discount / 100 As [Discount Amt],
+           UnitPrice - (UnitPrice * @Discount / 100) As [After Discount],
+           UnitPrice * @TaxRate / 100 As [Tax Amount],
+          (UnitPrice * @TaxRate / 100) + UnitPrice - 
+          (UnitPrice * @Discount / 100) + (@TaxRate / 100) As [Net Price]
+FROM StoreItems;
+GO
+
+EXEC Inventory.CalculateSalePrice;
+GO
