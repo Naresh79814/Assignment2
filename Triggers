@@ -1,0 +1,34 @@
+CREATE DATABASE SmallBusiness;
+GO
+USE SmallBusiness;
+GO
+
+CREATE SCHEMA Management;
+GO
+
+CREATE TABLE Customers
+(
+    CustomerID int identity(1, 1) primary key not null,
+    AccountNumber nchar(10),
+    FullName nvarchar(50)
+);
+GO
+
+CREATE TABLE Management.DatabaseOperations
+(
+    EmployeeName nvarchar(50),
+    ActionPerformed nvarchar(50),
+    TimePerformed time
+);
+GO
+
+CREATE TRIGGER CreateCustomer
+ON Customers
+INSTEAD OF INSERT
+AS
+    BEGIN
+        INSERT INTO Management.DatabaseOperations
+        VALUES(SUSER_SNAME(), 
+	       N'Attempt to create new record', GETDATE())
+    END
+GO
